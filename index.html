@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Opscope · Kubernetes, at a glance</title>
+  <meta name="description" content="Opscope is a small, read-only Kubernetes dashboard. One Docker image shows what's running, what's failing and why, and never changes anything in your cluster.">
+
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#F6F3EE" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101418" media="(prefers-color-scheme: dark)">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Opscope · Kubernetes, at a glance">
+  <meta property="og:description" content="A small, read-only Kubernetes dashboard. One Docker image, one page, nothing changed.">
+  <meta property="og:image" content="https://unnikrishnannam.github.io/OpScope-Website/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://unnikrishnannam.github.io/OpScope-Website/og-image.png">
+
+  <script>
+    // Set the theme before the page draws, so dark mode never flashes white.
+    (function () {
+      var d = document.documentElement, t = null;
+      d.classList.add('js');
+      try { t = localStorage.getItem('opscope-site-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      d.dataset.theme = t;
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@500;600;700;800&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- ============ Header ============ -->
+  <header class="nav" data-nav>
+    <div class="nav-inner wrap">
+      <a class="nav-logo" href="#top" aria-label="Opscope, back to top">
+        <svg viewBox="10 5 148.054 38.5" aria-hidden="true">
+          <path fill="currentColor" d="M24 5A14 14 0 1 1 24 33A14 14 0 1 1 24 5ZM24 12A7 7 0 1 0 24 26A7 7 0 1 0 24 12ZM10 19H17V40A3.5 3.5 0 0 1 10 40Z"/>
+          <circle cx="24" cy="19" r="4.25" fill="var(--signal)"/>
+          <path fill="currentColor" d="M54.917 33.435Q52.554 33.435 50.77 32.377Q48.987 31.318 47.993 29.455Q47 27.591 47 25.17Q47 22.72 48.015 20.856Q49.03 18.993 50.814 17.949Q52.597 16.905 54.917 16.905Q57.281 16.905 59.071 17.963Q60.862 19.022 61.862 20.885Q62.863 22.748 62.863 25.17Q62.863 27.606 61.855 29.469Q60.848 31.332 59.057 32.384Q57.266 33.435 54.917 33.435ZM54.917 29.752Q56.817 29.752 57.752 28.469Q58.687 27.185 58.687 25.17Q58.687 23.082 57.737 21.835Q56.788 20.588 54.917 20.588Q53.627 20.588 52.8 21.168Q51.974 21.748 51.575 22.777Q51.176 23.807 51.176 25.17Q51.176 27.273 52.126 28.512Q53.076 29.752 54.917 29.752ZM72.288 33.435Q69.954 33.435 68.388 32.348Q66.822 31.26 66.031 29.389Q65.241 27.519 65.241 25.17Q65.241 22.821 66.024 20.95Q66.807 19.08 68.329 17.992Q69.852 16.905 72.085 16.905Q74.333 16.905 76 17.978Q77.668 19.051 78.588 20.914Q79.509 22.777 79.509 25.17Q79.509 27.519 78.603 29.389Q77.697 31.26 76.073 32.348Q74.449 33.435 72.288 33.435ZM64.574 39.96V17.34H68.054V28.07H68.547V39.96ZM71.65 29.926Q72.926 29.926 73.738 29.288Q74.55 28.65 74.942 27.57Q75.333 26.489 75.333 25.17Q75.333 23.865 74.927 22.785Q74.521 21.704 73.673 21.059Q72.825 20.414 71.505 20.414Q70.273 20.414 69.511 21.009Q68.75 21.603 68.402 22.676Q68.054 23.749 68.054 25.17Q68.054 26.591 68.402 27.664Q68.75 28.737 69.54 29.331Q70.331 29.926 71.65 29.926ZM86.933 33.435Q83.975 33.435 82.155 32.094Q80.336 30.753 79.944 28.302L83.975 27.693Q84.222 28.795 85.07 29.419Q85.918 30.042 87.223 30.042Q88.296 30.042 88.876 29.629Q89.456 29.215 89.456 28.476Q89.456 28.012 89.224 27.729Q88.992 27.447 88.187 27.171Q87.383 26.895 85.686 26.446Q83.772 25.953 82.627 25.344Q81.481 24.735 80.974 23.887Q80.466 23.038 80.466 21.835Q80.466 20.327 81.234 19.218Q82.003 18.108 83.402 17.507Q84.802 16.905 86.701 16.905Q88.543 16.905 89.964 17.471Q91.385 18.036 92.262 19.08Q93.139 20.124 93.342 21.545L89.311 22.27Q89.21 21.4 88.557 20.892Q87.905 20.385 86.788 20.298Q85.701 20.225 85.041 20.588Q84.381 20.95 84.381 21.632Q84.381 22.038 84.664 22.313Q84.947 22.589 85.838 22.879Q86.73 23.169 88.557 23.633Q90.341 24.097 91.421 24.713Q92.501 25.329 92.994 26.192Q93.487 27.055 93.487 28.273Q93.487 30.68 91.747 32.058Q90.007 33.435 86.933 33.435ZM102.129 33.435Q99.693 33.435 97.953 32.348Q96.213 31.26 95.285 29.389Q94.357 27.519 94.357 25.17Q94.357 22.792 95.321 20.922Q96.285 19.051 98.04 17.978Q99.794 16.905 102.187 16.905Q104.957 16.905 106.834 18.304Q108.712 19.703 109.234 22.125L105.29 23.169Q104.942 21.951 104.079 21.27Q103.216 20.588 102.129 20.588Q100.882 20.588 100.085 21.19Q99.287 21.791 98.91 22.828Q98.533 23.865 98.533 25.17Q98.533 27.215 99.439 28.483Q100.346 29.752 102.129 29.752Q103.463 29.752 104.159 29.143Q104.855 28.534 105.203 27.403L109.234 28.244Q108.567 30.738 106.711 32.087Q104.855 33.435 102.129 33.435ZM117.296 33.435Q114.933 33.435 113.149 32.377Q111.366 31.318 110.372 29.455Q109.379 27.591 109.379 25.17Q109.379 22.72 110.394 20.856Q111.409 18.993 113.193 17.949Q114.976 16.905 117.296 16.905Q119.66 16.905 121.45 17.963Q123.241 19.022 124.242 20.885Q125.242 22.748 125.242 25.17Q125.242 27.606 124.234 29.469Q123.227 31.332 121.436 32.384Q119.645 33.435 117.296 33.435ZM117.296 29.752Q119.196 29.752 120.131 28.469Q121.066 27.185 121.066 25.17Q121.066 23.082 120.116 21.835Q119.167 20.588 117.296 20.588Q116.006 20.588 115.179 21.168Q114.353 21.748 113.954 22.777Q113.555 23.807 113.555 25.17Q113.555 27.273 114.505 28.512Q115.455 29.752 117.296 29.752ZM134.667 33.435Q132.333 33.435 130.767 32.348Q129.201 31.26 128.41 29.389Q127.62 27.519 127.62 25.17Q127.62 22.821 128.403 20.95Q129.186 19.08 130.709 17.992Q132.231 16.905 134.464 16.905Q136.712 16.905 138.379 17.978Q140.047 19.051 140.967 20.914Q141.888 22.777 141.888 25.17Q141.888 27.519 140.982 29.389Q140.076 31.26 138.452 32.348Q136.828 33.435 134.667 33.435ZM126.953 39.96V17.34H130.433V28.07H130.926V39.96ZM134.029 29.926Q135.305 29.926 136.117 29.288Q136.929 28.65 137.321 27.57Q137.712 26.489 137.712 25.17Q137.712 23.865 137.306 22.785Q136.9 21.704 136.052 21.059Q135.204 20.414 133.884 20.414Q132.651 20.414 131.89 21.009Q131.129 21.603 130.781 22.676Q130.433 23.749 130.433 25.17Q130.433 26.591 130.781 27.664Q131.129 28.737 131.919 29.331Q132.71 29.926 134.029 29.926ZM150.907 33.435Q148.5 33.435 146.666 32.398Q144.832 31.361 143.795 29.542Q142.758 27.722 142.758 25.373Q142.758 22.806 143.773 20.907Q144.788 19.008 146.572 17.956Q148.355 16.905 150.675 16.905Q153.14 16.905 154.865 18.065Q156.591 19.225 157.418 21.328Q158.244 23.43 157.998 26.272H154.097V24.822Q154.097 22.429 153.336 21.378Q152.575 20.327 150.849 20.327Q148.834 20.327 147.884 21.552Q146.934 22.777 146.934 25.17Q146.934 27.36 147.884 28.556Q148.834 29.752 150.675 29.752Q151.835 29.752 152.661 29.245Q153.488 28.737 153.923 27.78L157.867 28.911Q156.983 31.057 155.076 32.246Q153.169 33.435 150.907 33.435ZM145.716 26.272V23.343H156.098V26.272Z"/>
+        </svg>
+      </a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#problem">Problem</a>
+        <a href="#solution">Solution</a>
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a href="#fine-print">Fine print</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-ghost btn-sm gh" href="https://github.com/unnikrishnanNam/OpScope" rel="noopener">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.68 0-1.26.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.82 1.19 3.08 0 4.41-2.7 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+          <span class="gh-label">GitHub</span>
+          <span class="gh-stars" data-stars hidden></span>
+        </a>
+        <button class="btn btn-ghost btn-sm btn-icon" type="button" data-theme-toggle aria-label="Switch to dark theme">
+          <svg class="i i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg class="i i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ============ Hero ============ -->
+    <section class="hero wrap" id="top">
+      <div class="hero-copy">
+        <a class="pill reveal" href="https://github.com/unnikrishnanNam/OpScope/releases" rel="noopener">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span>v1.1.0 is out</span>
+          <span class="pill-sep" aria-hidden="true"></span>
+          <span class="muted">amd64 and arm64</span>
+        </a>
+        <h1 class="hero-title">
+          <span class="line"><span>Kubernetes,</span></span>
+          <span class="line"><span>at a glance.</span></span>
+        </h1>
+        <p class="hero-lead reveal" style="--d: .35s">
+          A small, read-only dashboard for developers and ops teams. See what's running, what's failing and why,
+          on one page, from one container. It never changes a thing in your cluster.
+        </p>
+        <div class="hero-actions reveal" style="--d: .45s">
+          <a class="btn btn-primary" href="#install">
+            Get started
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+          </a>
+          <div class="cmd" data-copy-wrap>
+            <code><span class="cmd-prompt" aria-hidden="true">$</span> docker run -p 127.0.0.1:8080:8080 ghcr.io/unnikrishnannam/opscope</code>
+            <button class="copy" type="button" data-copy="docker run -p 127.0.0.1:8080:8080 ghcr.io/unnikrishnannam/opscope" aria-label="Copy the docker run command">
+              <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-mark" aria-hidden="true">
+        <svg viewBox="9 4 30 40.5" class="mark">
+          <path class="mark-stem" fill="currentColor" d="M10 19H17V40A3.5 3.5 0 0 1 10 40Z"/>
+          <path class="mark-bowl" fill="currentColor" d="M24 5A14 14 0 1 1 24 33A14 14 0 1 1 24 5ZM24 12A7 7 0 1 0 24 26A7 7 0 1 0 24 12Z"/>
+          <g class="pupil-wrap"><circle class="pupil" data-pupil cx="24" cy="19" r="4.25" fill="var(--signal)"/></g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ============ Status ticker ============ -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <ul class="ticker-list">
+          <li><i class="dot ok"></i>kubemaster <b>Ready</b></li>
+          <li><i class="dot bad"></i>argocd-server-5fb969f99-dvkhl <b class="t-bad">CrashLoopBackOff</b></li>
+          <li><i class="dot ok"></i>calico-node-cfnrk <b>Running</b></li>
+          <li><i class="dot ok"></i>main-gateway <b>Programmed</b></li>
+          <li><i class="dot warn"></i>argocd-applicationset-controller <b class="t-warn">0/1 ready</b></li>
+          <li><i class="dot ok"></i>kubeworker01 <b>Ready</b></li>
+          <li><i class="dot ok"></i>api-route <b>Accepted</b></li>
+          <li><i class="dot warn"></i>web-7c9d8 <b class="t-warn">ContainerCreating</b></li>
+          <li><i class="dot ok"></i>coredns-7c65d6cfc9-x2lbk <b>Running</b></li>
+          <li><i class="dot live"></i>cpu <b>2%</b> memory <b>62%</b></li>
+          <li><i class="dot ok"></i>kubeworker02 <b>Ready</b></li>
+        </ul>
+        <ul class="ticker-list">
+          <li><i class="dot ok"></i>kubemaster <b>Ready</b></li>
+          <li><i class="dot bad"></i>argocd-server-5fb969f99-dvkhl <b class="t-bad">CrashLoopBackOff</b></li>
+          <li><i class="dot ok"></i>calico-node-cfnrk <b>Running</b></li>
+          <li><i class="dot ok"></i>main-gateway <b>Programmed</b></li>
+          <li><i class="dot warn"></i>argocd-applicationset-controller <b class="t-warn">0/1 ready</b></li>
+          <li><i class="dot ok"></i>kubeworker01 <b>Ready</b></li>
+          <li><i class="dot ok"></i>api-route <b>Accepted</b></li>
+          <li><i class="dot warn"></i>web-7c9d8 <b class="t-warn">ContainerCreating</b></li>
+          <li><i class="dot ok"></i>coredns-7c65d6cfc9-x2lbk <b>Running</b></li>
+          <li><i class="dot live"></i>cpu <b>2%</b> memory <b>62%</b></li>
+          <li><i class="dot ok"></i>kubeworker02 <b>Ready</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ Problem ============ -->
+    <section class="section problem" id="problem">
+      <div class="wrap">
+        <p class="kicker reveal"><span>01</span>The problem</p>
+        <h2 class="h2 reveal">
+          It's 2&nbsp;a.m. and something is stuck in
+          <span class="badge-inline"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>CrashLoopBackOff</span>.
+        </h2>
+        <p class="sub reveal">You know the drill. Here's what finding it usually looks like.</p>
+
+        <div class="story">
+          <div class="story-stage" data-stage data-step="0">
+            <div class="term">
+              <div class="term-bar">
+                <span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="term-title" data-term-title>zsh · ~/oncall</span>
+              </div>
+
+              <div class="term-screen is-on" data-screen="0" aria-hidden="true">
+                <p class="tl" style="--i:0"><span class="p">$</span> kubectl get pods -A | grep -v Running</p>
+                <p class="tl dim" style="--i:1">NAMESPACE  NAME                               READY  STATUS</p>
+                <p class="tl" style="--i:1">argocd     argocd-server-5fb969f99-dvkhl      0/1    <span class="t-bad">CrashLoopBackOff</span></p>
+                <p class="tl" style="--i:1">argocd     argocd-applicationset-…-2qsdj      0/1    <span class="t-bad">CrashLoopBackOff</span></p>
+                <p class="tl" style="--i:2"><span class="p">$</span> kubectl describe pod argocd-server-5fb969f99-dvkhl -n argocd</p>
+                <p class="tl dim" style="--i:3">  … 214 more lines</p>
+                <p class="tl" style="--i:4"><span class="p">$</span> kubectl logs argocd-server-5fb969f99-dvkhl -n argocd --previous</p>
+                <p class="tl" style="--i:5"><span class="p">$</span> kubectl top nodes</p>
+                <p class="tl" style="--i:6"><span class="p">$</span> kubectl get events -A --field-selector type=Warning</p>
+                <p class="tl" style="--i:7"><span class="p">$</span> kubectl get httproutes -A<span class="caret"></span></p>
+              </div>
+
+              <div class="term-screen" data-screen="1" aria-hidden="true">
+                <p class="tl" style="--i:0"><span class="p">$</span> helm install monitoring prometheus-community/kube-prometheus-stack</p>
+                <p class="tl dim" style="--i:1">  creating 1 namespace, a pile of CRDs and</p>
+                <p class="tl" style="--i:2">  <span class="t-ok">+</span> prometheus-operator        Deployment</p>
+                <p class="tl" style="--i:3">  <span class="t-ok">+</span> prometheus                 StatefulSet</p>
+                <p class="tl" style="--i:4">  <span class="t-ok">+</span> alertmanager               StatefulSet</p>
+                <p class="tl" style="--i:5">  <span class="t-ok">+</span> grafana                    Deployment</p>
+                <p class="tl" style="--i:6">  <span class="t-ok">+</span> node-exporter              DaemonSet, on every node</p>
+                <p class="tl" style="--i:7">  <span class="t-ok">+</span> kube-state-metrics         Deployment</p>
+                <p class="tl dim" style="--i:8">  next: storage, retention, dashboards, upgrades<span class="caret"></span></p>
+              </div>
+
+              <div class="term-screen" data-screen="2" aria-hidden="true">
+                <p class="tl dim" style="--i:0"># cluster-admin-dashboard.yaml</p>
+                <p class="tl" style="--i:1"><span class="k">kind</span>: ClusterRole</p>
+                <p class="tl" style="--i:2"><span class="k">rules</span>:</p>
+                <p class="tl" style="--i:3">- <span class="k">apiGroups</span>: [<span class="s">"*"</span>]</p>
+                <p class="tl" style="--i:4">  <span class="k">resources</span>: [<span class="s">"*"</span>]</p>
+                <p class="tl hl-bad" style="--i:5">  <span class="k">verbs</span>: [<span class="s">"*"</span>]   <span class="t-bad"># create, patch, delete. In prod.</span></p>
+                <p class="tl" style="--i:7">&nbsp;</p>
+                <p class="tl dim" style="--i:7">$ kubectl delete deployment payments-api -n prod<span class="caret"></span></p>
+              </div>
+
+              <div class="term-foot">
+                <span data-foot="0" class="is-on">6 commands in, and still no big picture</span>
+                <span data-foot="1">6 workloads to run before you see one</span>
+                <span data-foot="2">One misclick from the next incident</span>
+              </div>
+            </div>
+          </div>
+
+          <ol class="story-steps">
+            <li class="step is-active" data-step-i="0">
+              <span class="step-n">1 / 3</span>
+              <h3>kubectl answers one question at a time.</h3>
+              <p>Which pods are failing? Where do they run? Why did the last one die? Every answer is another command, another <code>-n</code> flag, another wall of text to scan while the pager keeps buzzing.</p>
+            </li>
+            <li class="step" data-step-i="1">
+              <span class="step-n">2 / 3</span>
+              <h3>A monitoring stack is a project of its own.</h3>
+              <p>Exporters on every node, a metrics database, storage, dashboards to build. Worth it for alerting and history. A lot to stand up when you only need to see what's going on right now.</p>
+            </li>
+            <li class="step" data-step-i="2">
+              <span class="step-n">3 / 3</span>
+              <h3>Admin dashboards make production nervous.</h3>
+              <p>A tool that can edit and delete is one misclick from the next incident, and a hard sell to whoever owns the cluster.</p>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Solution ============ -->
+    <section class="section solution" id="solution">
+      <div class="wrap">
+        <p class="kicker reveal"><span>02</span>The solution</p>
+        <h2 class="display reveal">Opscope is the glance.</h2>
+        <p class="sub reveal">One page that tells you what's healthy, what needs attention and where to look next. Click through to any object for its YAML, events and logs.</p>
+      </div>
+
+      <div class="shot-wrap wrap-wide">
+        <figure class="shot" data-shot>
+          <div class="shot-bar" aria-hidden="true">
+            <span class="term-dots"><i></i><i></i><i></i></span>
+            <span class="shot-url">localhost:8080/c/multipass</span>
+          </div>
+          <div class="shot-img">
+            <img class="only-light" src="assets/img/overview-light.webp" width="1600" height="1000" loading="lazy" decoding="async"
+                 alt="The Opscope overview for a cluster called multipass: a 6 need attention chip, nodes, pods, CPU and memory usage, every resource kind with what needs attention, and per-node usage.">
+            <img class="only-dark" src="assets/img/overview-dark.webp" width="1600" height="1000" loading="lazy" decoding="async"
+                 alt="The Opscope overview for a cluster called multipass: a 6 need attention chip, nodes, pods, CPU and memory usage, every resource kind with what needs attention, and per-node usage.">
+            <span class="pin" style="--x:39%; --y:9.5%" aria-hidden="true">1</span>
+            <span class="pin" style="--x:74%; --y:30%" aria-hidden="true">2</span>
+            <span class="pin" style="--x:52%; --y:50.7%" aria-hidden="true">3</span>
+            <span class="pin" style="--x:86%; --y:52%" aria-hidden="true">4</span>
+          </div>
+          <figcaption class="visually-hidden">The overview page, annotated below.</figcaption>
+        </figure>
+        <ol class="pin-legend wrap">
+          <li class="reveal"><span class="pin-n">1</span><div><b>What needs attention</b>A health chip counts what's wrong, broken down on hover.</div></li>
+          <li class="reveal" style="--d:.06s"><span class="pin-n">2</span><div><b>Live usage</b>CPU and memory from metrics-server, with the last 15 minutes.</div></li>
+          <li class="reveal" style="--d:.12s"><span class="pin-n">3</span><div><b>Every kind, at once</b>Healthy against not, for each workload and Gateway API type.</div></li>
+          <li class="reveal" style="--d:.18s"><span class="pin-n">4</span><div><b>Every node</b>Status, role, version and usage against what's allocatable.</div></li>
+        </ol>
+      </div>
+
+      <div class="wrap">
+        <div class="answers">
+          <div class="answer reveal">
+            <p class="answer-num"><span data-count="1">1</span><small>page</small></p>
+            <h3>Instead of six commands.</h3>
+            <p>Health, nodes, pods, usage and recent warnings, top to bottom. Statuses are worked out like <code>kubectl get pods</code>, so crash loops show up as crash loops.</p>
+          </div>
+          <div class="answer reveal" style="--d:.08s">
+            <p class="answer-num"><span data-count="42">42</span><small>MB</small></p>
+            <h3>Instead of a stack.</h3>
+            <p>One Docker image with a Go server and the web app inside. No agents on your nodes, no database, nothing to operate.</p>
+          </div>
+          <div class="answer reveal" style="--d:.16s">
+            <p class="answer-num"><span data-count="2">2</span><small>verbs</small></p>
+            <h3>Instead of admin rights.</h3>
+            <p>Opscope uses <code>get</code> and <code>list</code>. Nothing else. Its ClusterRole couldn't create, patch or delete if it tried.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Features (bento) ============ -->
+    <section class="section features" id="features">
+      <div class="wrap">
+        <p class="kicker reveal"><span>03</span>Features</p>
+        <h2 class="h2 reveal">Everything you reach for when something breaks.</h2>
+        <p class="sub reveal">Built for the first five minutes of an incident, and every quiet day in between.</p>
+
+        <div class="bento">
+
+          <!-- A: overview -->
+          <article class="tile t-a reveal">
+            <div class="tile-vis vis-overview">
+              <div class="ov-head">
+                <span class="ov-name">multipass</span>
+                <span class="chip-warn"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg>6 need attention</span>
+              </div>
+              <p class="ov-meta">Kubernetes v1.31.14 · 17 namespaces</p>
+              <ul class="ov-rows">
+                <li><span class="ov-k">Deployments</span><span class="ov-c">23</span><span class="bar"><i style="--ok:91%; --warn:9%"></i></span><span class="ov-s t-warn"><i class="dot warn"></i>2 not ready</span></li>
+                <li><span class="ov-k">StatefulSets</span><span class="ov-c">2</span><span class="bar"><i style="--ok:50%; --warn:50%"></i></span><span class="ov-s t-warn"><i class="dot warn"></i>1 not ready</span></li>
+                <li><span class="ov-k">DaemonSets</span><span class="ov-c">3</span><span class="bar"><i style="--ok:100%; --warn:0%"></i></span><span class="ov-s">All ready</span></li>
+                <li><span class="ov-k">Pods</span><span class="ov-c">50</span><span class="bar"><i style="--ok:94%; --warn:2%; --bad:4%"></i></span><span class="ov-s t-bad"><i class="dot bad"></i>3 unhealthy</span></li>
+                <li><span class="ov-k">Gateways</span><span class="ov-c">1</span><span class="bar"><i style="--ok:100%; --warn:0%"></i></span><span class="ov-s">All programmed</span></li>
+                <li><span class="ov-k">HTTPRoutes</span><span class="ov-c">2</span><span class="bar"><i style="--ok:100%; --warn:0%"></i></span><span class="ov-s">All accepted</span></li>
+              </ul>
+              <div class="ov-warn">
+                <p class="ov-warn-title">Recent warnings<span>4</span></p>
+                <ul>
+                  <li><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg><b>BackOff</b><time>2m ago</time><p>Back-off restarting failed container argocd-server</p></li>
+                  <li><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg><b>Unhealthy</b><time>6m ago</time><p>Readiness probe failed: HTTP probe failed with statuscode: 503</p></li>
+                  <li><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg><b>FailedMount</b><time>11m ago</time><p>MountVolume.SetUp failed: configmap "web-config" not found</p></li>
+                </ul>
+              </div>
+            </div>
+            <div class="tile-text">
+              <h3>Start from the problem, not from a list.</h3>
+              <p>The overview counts every kind and says what needs attention, so the first thing you see is the thing that's broken.</p>
+            </div>
+          </article>
+
+          <!-- B: read-only -->
+          <article class="tile t-b reveal" style="--d:.05s">
+            <div class="tile-vis vis-verbs" aria-hidden="true">
+              <p class="verb yes"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>get</p>
+              <p class="verb yes"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>list</p>
+              <p class="verb no">create</p>
+              <p class="verb no">update</p>
+              <p class="verb no">patch</p>
+              <p class="verb no">delete</p>
+            </div>
+            <div class="tile-text">
+              <h3>Can't break what it can't touch.</h3>
+              <p>Read-only by design, down to its RBAC rules.</p>
+            </div>
+          </article>
+
+          <!-- C: live usage -->
+          <article class="tile t-c reveal" style="--d:.1s">
+            <div class="tile-vis vis-usage">
+              <p class="usage-label">Memory</p>
+              <p class="usage-num"><span data-count="62">62</span><small>%</small></p>
+              <p class="usage-meta">5.2 GiB of 8.4 GiB</p>
+              <svg class="spark" viewBox="0 0 200 56" preserveAspectRatio="none" aria-hidden="true">
+                <path class="spark-area" data-spark-area d=""/>
+                <path class="spark-line" data-spark d=""/>
+                <circle class="spark-now" data-spark-now r="3.5" cx="200" cy="20"/>
+              </svg>
+            </div>
+            <div class="tile-text">
+              <h3>Live CPU and memory.</h3>
+              <p>From metrics-server every 15 seconds, with the last 15 minutes as a line.</p>
+            </div>
+          </article>
+
+          <!-- D: logs -->
+          <article class="tile t-d reveal">
+            <div class="tile-vis vis-logs">
+              <div class="log-head">
+                <span class="log-pod">argocd-server-5fb969f99-dvkhl</span>
+                <span class="t-bad log-status"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>CrashLoopBackOff</span>
+              </div>
+              <div class="log-tools" aria-hidden="true">
+                <span class="seg"><span>Current</span><span class="on">Previous run</span></span>
+                <span class="log-exit">Last exit: Error (exit 1) · 762 restarts</span>
+              </div>
+              <div class="log-body" aria-label="Previous run log">
+                <p class="ll"><span class="lt">20:41:11</span>level=info msg="Loading TLS configuration from secret argocd/argocd-server-tls"</p>
+                <p class="ll"><span class="lt">20:41:12</span>level=info msg="ArgoCD API Server is starting" version=v2.13.0</p>
+                <p class="ll"><span class="lt">20:41:12</span>level=info msg="Starting configmap/secret informers"</p>
+                <p class="ll"><span class="lt">20:41:13</span>level=info msg="Configmap/secret informer synced"</p>
+                <p class="ll t-bad"><span class="lt">20:41:13</span>level=fatal msg="the server could not find the requested resource (post appprojects.argoproj.io)"</p>
+              </div>
+            </div>
+            <div class="tile-text">
+              <h3>Why it crashed, not just that it did.</h3>
+              <p>Each container's last exit, and the previous run's logs one click away. Or follow live logs as they stream.</p>
+            </div>
+          </article>
+
+          <!-- E: secrets -->
+          <article class="tile t-e reveal">
+            <div class="tile-vis vis-secrets">
+              <div class="sk">
+                <span class="sk-name">tls.crt</span>
+                <button class="sk-btn" type="button" data-reveal aria-expanded="false">Reveal</button>
+                <code class="sk-val" data-secret-val>••••••••••••••••••</code>
+              </div>
+              <div class="sk">
+                <span class="sk-name">tls.key</span>
+                <span class="sk-btn sk-btn-ghost" aria-hidden="true">Reveal</span>
+                <code class="sk-val">••••••••••••••••••</code>
+              </div>
+            </div>
+            <div class="tile-text">
+              <h3>Secrets stay masked.</h3>
+              <p>Key names only. A value loads when you click, one key at a time, and is never cached.</p>
+            </div>
+          </article>
+
+          <!-- F: clusters -->
+          <article class="tile t-f reveal" style="--d:.05s">
+            <div class="tile-vis vis-clusters" aria-hidden="true">
+              <div class="cl-btn"><i class="dot ok"></i>multipass <span class="mono dim">v1.31.14</span><svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+              <ul class="cl-menu">
+                <li class="on"><i class="dot ok"></i>multipass<span class="mono dim">v1.31.14</span></li>
+                <li><i class="dot ok"></i>opscope-test<span class="mono dim">v1.35.0</span></li>
+                <li><i class="dot bad"></i>old-lab<span class="t-bad">unreachable</span></li>
+              </ul>
+            </div>
+            <div class="tile-text">
+              <h3>Many clusters, one switcher.</h3>
+              <p>From a kubeconfig, the environment, or the pod's own service account.</p>
+            </div>
+          </article>
+
+          <!-- J: themes compare -->
+          <article class="tile t-j reveal" style="--d:.1s">
+            <div class="tile-vis vis-compare" data-compare style="--pos: 50%">
+              <img src="assets/img/pods-light.webp" width="1600" height="1000" loading="lazy" decoding="async" alt="">
+              <img class="cmp-top" src="assets/img/pods-dark.webp" width="1600" height="1000" loading="lazy" decoding="async" alt="">
+              <span class="cmp-handle" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="m9 18-6-6 6-6M15 6l6 6-6 6"/></svg></span>
+              <input class="cmp-range" type="range" min="0" max="100" value="50" aria-label="Compare the light and dark themes of the pods page">
+            </div>
+            <div class="tile-text">
+              <h3>Light, dark, and your phone.</h3>
+              <p>Follows your system theme. Every page works at 375 px, for the incident that starts on the bus.</p>
+            </div>
+          </article>
+
+          <!-- G: gateway api -->
+          <article class="tile t-g reveal">
+            <div class="tile-vis vis-gw" aria-hidden="true">
+              <div class="gw-node"><span class="gw-kind">Gateway</span><b>main-gateway</b><span class="gw-st"><i class="dot ok"></i>Programmed</span></div>
+              <span class="gw-link"></span>
+              <div class="gw-node"><span class="gw-kind">HTTPRoute</span><b>api-route</b><span class="gw-st"><i class="dot ok"></i>Accepted</span></div>
+              <span class="gw-link"></span>
+              <div class="gw-node"><span class="gw-kind">Service</span><b>api</b><span class="gw-st mono">:8080</span></div>
+            </div>
+            <div class="tile-text">
+              <h3>Gateway API included.</h3>
+              <p>Gateways, HTTPRoutes and GatewayClasses sit next to Services and Ingresses.</p>
+            </div>
+          </article>
+
+          <!-- K: filter -->
+          <article class="tile t-k reveal" style="--d:.05s">
+            <div class="tile-vis vis-filter" data-filter-demo aria-hidden="true">
+              <div class="flt-input">
+                <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <span class="flt-text" data-filter-text></span><span class="flt-caret"></span>
+                <kbd>/</kbd>
+              </div>
+              <ul class="flt-rows">
+                <li data-match="0">calico-node-cfnrk<span><i class="dot ok"></i>Running</span></li>
+                <li data-match="1">argocd-server-5fb…<span class="t-bad"><i class="dot bad"></i>CrashLoop…</span></li>
+                <li data-match="0">coredns-7c65d6…<span><i class="dot ok"></i>Running</span></li>
+                <li data-match="1">argocd-appset-…<span class="t-bad"><i class="dot bad"></i>CrashLoop…</span></li>
+              </ul>
+            </div>
+            <div class="tile-text">
+              <h3>Press <kbd>/</kbd>, type “crash”.</h3>
+              <p>Every table filters on any column, instantly.</p>
+            </div>
+          </article>
+
+          <!-- I: hardened -->
+          <article class="tile t-i reveal">
+            <div class="tile-text">
+              <h3>Hardened for the cluster it watches.</h3>
+              <p>Run it as a pod with the manifests in the repo, and it behaves like a good tenant.</p>
+            </div>
+            <ul class="chips">
+              <li>Runs as non-root</li>
+              <li>Read-only root filesystem</li>
+              <li>No Linux capabilities</li>
+              <li>Default seccomp profile</li>
+              <li>Liveness and readiness probes</li>
+              <li>Graceful shutdown on SIGTERM</li>
+              <li>amd64 and arm64</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Install ============ -->
+    <section class="section install" id="install">
+      <div class="wrap install-grid">
+        <div class="install-intro">
+          <p class="kicker reveal"><span>04</span>Install</p>
+          <h2 class="h2 reveal">From zero to overview in one command.</h2>
+          <p class="sub reveal">Pick where Opscope runs. Every way ends at <code>localhost:8080</code>. Add metrics-server to the cluster if you want usage numbers.</p>
+        </div>
+
+        <div class="install-card reveal">
+          <div class="tabs" role="tablist" aria-label="Ways to run Opscope" data-tabs>
+            <button role="tab" id="tab-docker" aria-controls="panel-docker" aria-selected="true">Docker</button>
+            <button role="tab" id="tab-k8s" aria-controls="panel-k8s" aria-selected="false" tabindex="-1">Kubernetes</button>
+            <button role="tab" id="tab-src" aria-controls="panel-src" aria-selected="false" tabindex="-1">From source</button>
+            <span class="tabs-ind" aria-hidden="true"></span>
+          </div>
+
+          <div class="panel" role="tabpanel" id="panel-docker" aria-labelledby="tab-docker">
+            <ol class="steps">
+              <li>
+                <p>Run the image. The port stays on <code>127.0.0.1</code>, and saved clusters live in a volume.</p>
+                <div class="code"><pre><code>docker run --rm -p 127.0.0.1:8080:8080 -v opscope-data:/data ghcr.io/unnikrishnannam/opscope:latest</code></pre>
+                  <button class="copy" type="button" data-copy="docker run --rm -p 127.0.0.1:8080:8080 -v opscope-data:/data ghcr.io/unnikrishnannam/opscope:latest" aria-label="Copy command"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
+              </li>
+              <li>
+                <p>Open <code>localhost:8080</code>, choose Add a cluster and paste a kubeconfig. This prints one for your current context:</p>
+                <div class="code"><pre><code>kubectl config view --minify --flatten</code></pre>
+                  <button class="copy" type="button" data-copy="kubectl config view --minify --flatten" aria-label="Copy command"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
+              </li>
+            </ol>
+          </div>
+
+          <div class="panel" role="tabpanel" id="panel-k8s" aria-labelledby="tab-k8s" hidden>
+            <ol class="steps">
+              <li>
+                <p>Apply the manifests: a namespace, a read-only ClusterRole, the Deployment and a Service.</p>
+                <div class="code"><pre><code>kubectl apply -f https://raw.githubusercontent.com/unnikrishnanNam/OpScope/main/deploy/kubernetes/opscope.yaml</code></pre>
+                  <button class="copy" type="button" data-copy="kubectl apply -f https://raw.githubusercontent.com/unnikrishnanNam/OpScope/main/deploy/kubernetes/opscope.yaml" aria-label="Copy command"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
+              </li>
+              <li>
+                <p>Optional: let it read Secrets. Leave this out and only the Secrets pages are off.</p>
+                <div class="code"><pre><code>kubectl apply -f https://raw.githubusercontent.com/unnikrishnanNam/OpScope/main/deploy/kubernetes/secrets-access.yaml</code></pre>
+                  <button class="copy" type="button" data-copy="kubectl apply -f https://raw.githubusercontent.com/unnikrishnanNam/OpScope/main/deploy/kubernetes/secrets-access.yaml" aria-label="Copy command"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
+              </li>
+              <li>
+                <p>Reach it through a port-forward. The cluster shows up as “this cluster”.</p>
+                <div class="code"><pre><code>kubectl -n opscope port-forward svc/opscope 8080:80</code></pre>
+                  <button class="copy" type="button" data-copy="kubectl -n opscope port-forward svc/opscope 8080:80" aria-label="Copy command"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
+              </li>
+            </ol>
+          </div>
+
+          <div class="panel" role="tabpanel" id="panel-src" aria-labelledby="tab-src" hidden>
+            <ol class="steps">
+              <li>
+                <p>Clone the repository.</p>
+                <div class="code"><pre><code>git clone https://github.com/unnikrishnanNam/OpScope.git &amp;&amp; cd OpScope</code></pre>
+                  <button class="copy" type="button" data-copy="git clone https://github.com/unnikrishnanNam/OpScope.git && cd OpScope" aria-label="Copy command"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
+              </li>
+              <li>
+                <p>Build the image and run it. Or <code>make build</code> for a local binary, with Go 1.26+ and Node.js 24+.</p>
+                <div class="code"><pre><code>make docker-build &amp;&amp; make docker-run</code></pre>
+                  <button class="copy" type="button" data-copy="make docker-build && make docker-run" aria-label="Copy command"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Fine print ============ -->
+    <section class="section fine" id="fine-print">
+      <div class="wrap">
+        <p class="kicker reveal"><span>05</span>Fine print</p>
+        <h2 class="h2 reveal">The fine print, up front.</h2>
+        <div class="fine-grid">
+          <div class="fine-item reveal">
+            <svg class="i i-lg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+            <h3>There's no login.</h3>
+            <p>Anyone who can open the page can read what Opscope can read. Keep it on <code>127.0.0.1</code>, reach it through <code>kubectl port-forward</code>, or put an auth proxy such as oauth2-proxy in front.</p>
+          </div>
+          <div class="fine-item reveal" style="--d:.08s">
+            <svg class="i i-lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+            <h3>Reading Secrets is opt-in.</h3>
+            <p>In a cluster, Secrets access is its own ClusterRole. Delete that one file and the Secrets pages say they aren't allowed. Everything else keeps working.</p>
+          </div>
+          <div class="fine-item reveal" style="--d:.16s">
+            <svg class="i i-lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <h3>A glance, not a time machine.</h3>
+            <p>Usage history is 15 minutes, kept in memory. For alerts and long-term metrics, keep your monitoring stack. Opscope sits happily next to it.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CTA ============ -->
+    <section class="cta">
+      <div class="wrap cta-inner">
+        <h2 class="display reveal">Take a look at your cluster.</h2>
+        <div class="cta-actions reveal" style="--d:.1s">
+          <a class="btn btn-primary btn-lg" href="#install">Install Opscope</a>
+          <a class="btn btn-ghost btn-lg" href="https://github.com/unnikrishnanNam/OpScope" rel="noopener">Read the code on GitHub</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Footer ============ -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-top">
+        <p class="footer-note">A small, read-only Kubernetes dashboard.<br>Go, React and plain CSS. Open source.</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/unnikrishnanNam/OpScope" rel="noopener">GitHub</a></li>
+          <li><a href="https://github.com/unnikrishnanNam/OpScope/releases" rel="noopener">Releases</a></li>
+          <li><a href="https://github.com/unnikrishnanNam/OpScope#readme" rel="noopener">Documentation</a></li>
+          <li><a href="https://github.com/unnikrishnanNam/OpScope/issues" rel="noopener">Report an issue</a></li>
+        </ul>
+      </div>
+      <svg class="footer-logo" viewBox="10 5 148.054 38.5" role="img" aria-label="Opscope">
+        <path fill="currentColor" d="M24 5A14 14 0 1 1 24 33A14 14 0 1 1 24 5ZM24 12A7 7 0 1 0 24 26A7 7 0 1 0 24 12ZM10 19H17V40A3.5 3.5 0 0 1 10 40Z"/>
+        <circle data-pupil cx="24" cy="19" r="4.25" fill="var(--signal)"/>
+        <path fill="currentColor" d="M54.917 33.435Q52.554 33.435 50.77 32.377Q48.987 31.318 47.993 29.455Q47 27.591 47 25.17Q47 22.72 48.015 20.856Q49.03 18.993 50.814 17.949Q52.597 16.905 54.917 16.905Q57.281 16.905 59.071 17.963Q60.862 19.022 61.862 20.885Q62.863 22.748 62.863 25.17Q62.863 27.606 61.855 29.469Q60.848 31.332 59.057 32.384Q57.266 33.435 54.917 33.435ZM54.917 29.752Q56.817 29.752 57.752 28.469Q58.687 27.185 58.687 25.17Q58.687 23.082 57.737 21.835Q56.788 20.588 54.917 20.588Q53.627 20.588 52.8 21.168Q51.974 21.748 51.575 22.777Q51.176 23.807 51.176 25.17Q51.176 27.273 52.126 28.512Q53.076 29.752 54.917 29.752ZM72.288 33.435Q69.954 33.435 68.388 32.348Q66.822 31.26 66.031 29.389Q65.241 27.519 65.241 25.17Q65.241 22.821 66.024 20.95Q66.807 19.08 68.329 17.992Q69.852 16.905 72.085 16.905Q74.333 16.905 76 17.978Q77.668 19.051 78.588 20.914Q79.509 22.777 79.509 25.17Q79.509 27.519 78.603 29.389Q77.697 31.26 76.073 32.348Q74.449 33.435 72.288 33.435ZM64.574 39.96V17.34H68.054V28.07H68.547V39.96ZM71.65 29.926Q72.926 29.926 73.738 29.288Q74.55 28.65 74.942 27.57Q75.333 26.489 75.333 25.17Q75.333 23.865 74.927 22.785Q74.521 21.704 73.673 21.059Q72.825 20.414 71.505 20.414Q70.273 20.414 69.511 21.009Q68.75 21.603 68.402 22.676Q68.054 23.749 68.054 25.17Q68.054 26.591 68.402 27.664Q68.75 28.737 69.54 29.331Q70.331 29.926 71.65 29.926ZM86.933 33.435Q83.975 33.435 82.155 32.094Q80.336 30.753 79.944 28.302L83.975 27.693Q84.222 28.795 85.07 29.419Q85.918 30.042 87.223 30.042Q88.296 30.042 88.876 29.629Q89.456 29.215 89.456 28.476Q89.456 28.012 89.224 27.729Q88.992 27.447 88.187 27.171Q87.383 26.895 85.686 26.446Q83.772 25.953 82.627 25.344Q81.481 24.735 80.974 23.887Q80.466 23.038 80.466 21.835Q80.466 20.327 81.234 19.218Q82.003 18.108 83.402 17.507Q84.802 16.905 86.701 16.905Q88.543 16.905 89.964 17.471Q91.385 18.036 92.262 19.08Q93.139 20.124 93.342 21.545L89.311 22.27Q89.21 21.4 88.557 20.892Q87.905 20.385 86.788 20.298Q85.701 20.225 85.041 20.588Q84.381 20.95 84.381 21.632Q84.381 22.038 84.664 22.313Q84.947 22.589 85.838 22.879Q86.73 23.169 88.557 23.633Q90.341 24.097 91.421 24.713Q92.501 25.329 92.994 26.192Q93.487 27.055 93.487 28.273Q93.487 30.68 91.747 32.058Q90.007 33.435 86.933 33.435ZM102.129 33.435Q99.693 33.435 97.953 32.348Q96.213 31.26 95.285 29.389Q94.357 27.519 94.357 25.17Q94.357 22.792 95.321 20.922Q96.285 19.051 98.04 17.978Q99.794 16.905 102.187 16.905Q104.957 16.905 106.834 18.304Q108.712 19.703 109.234 22.125L105.29 23.169Q104.942 21.951 104.079 21.27Q103.216 20.588 102.129 20.588Q100.882 20.588 100.085 21.19Q99.287 21.791 98.91 22.828Q98.533 23.865 98.533 25.17Q98.533 27.215 99.439 28.483Q100.346 29.752 102.129 29.752Q103.463 29.752 104.159 29.143Q104.855 28.534 105.203 27.403L109.234 28.244Q108.567 30.738 106.711 32.087Q104.855 33.435 102.129 33.435ZM117.296 33.435Q114.933 33.435 113.149 32.377Q111.366 31.318 110.372 29.455Q109.379 27.591 109.379 25.17Q109.379 22.72 110.394 20.856Q111.409 18.993 113.193 17.949Q114.976 16.905 117.296 16.905Q119.66 16.905 121.45 17.963Q123.241 19.022 124.242 20.885Q125.242 22.748 125.242 25.17Q125.242 27.606 124.234 29.469Q123.227 31.332 121.436 32.384Q119.645 33.435 117.296 33.435ZM117.296 29.752Q119.196 29.752 120.131 28.469Q121.066 27.185 121.066 25.17Q121.066 23.082 120.116 21.835Q119.167 20.588 117.296 20.588Q116.006 20.588 115.179 21.168Q114.353 21.748 113.954 22.777Q113.555 23.807 113.555 25.17Q113.555 27.273 114.505 28.512Q115.455 29.752 117.296 29.752ZM134.667 33.435Q132.333 33.435 130.767 32.348Q129.201 31.26 128.41 29.389Q127.62 27.519 127.62 25.17Q127.62 22.821 128.403 20.95Q129.186 19.08 130.709 17.992Q132.231 16.905 134.464 16.905Q136.712 16.905 138.379 17.978Q140.047 19.051 140.967 20.914Q141.888 22.777 141.888 25.17Q141.888 27.519 140.982 29.389Q140.076 31.26 138.452 32.348Q136.828 33.435 134.667 33.435ZM126.953 39.96V17.34H130.433V28.07H130.926V39.96ZM134.029 29.926Q135.305 29.926 136.117 29.288Q136.929 28.65 137.321 27.57Q137.712 26.489 137.712 25.17Q137.712 23.865 137.306 22.785Q136.9 21.704 136.052 21.059Q135.204 20.414 133.884 20.414Q132.651 20.414 131.89 21.009Q131.129 21.603 130.781 22.676Q130.433 23.749 130.433 25.17Q130.433 26.591 130.781 27.664Q131.129 28.737 131.919 29.331Q132.71 29.926 134.029 29.926ZM150.907 33.435Q148.5 33.435 146.666 32.398Q144.832 31.361 143.795 29.542Q142.758 27.722 142.758 25.373Q142.758 22.806 143.773 20.907Q144.788 19.008 146.572 17.956Q148.355 16.905 150.675 16.905Q153.14 16.905 154.865 18.065Q156.591 19.225 157.418 21.328Q158.244 23.43 157.998 26.272H154.097V24.822Q154.097 22.429 153.336 21.378Q152.575 20.327 150.849 20.327Q148.834 20.327 147.884 21.552Q146.934 22.777 146.934 25.17Q146.934 27.36 147.884 28.556Q148.834 29.752 150.675 29.752Q151.835 29.752 152.661 29.245Q153.488 28.737 153.923 27.78L157.867 28.911Q156.983 31.057 155.076 32.246Q153.169 33.435 150.907 33.435ZM145.716 26.272V23.343H156.098V26.272Z"/>
+      </svg>
+    </div>
+  </footer>
+</body>
+</html>
